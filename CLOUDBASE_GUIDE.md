@@ -6,90 +6,113 @@
 
 ## 准备工作
 
-- [ ] 已注册腾讯云账号
-- [ ] 已在 IDE 集成面板登录 CloudBase
+- [x] 已注册腾讯云账号
+- [x] 已在 IDE 集成面板登录 CloudBase
+- [x] CloudBase 环境已创建（ID：`anniversary-album-d8dqof1f7d1e48`）
 
 ---
 
-## 第一步：创建 CloudBase 环境
+## 第一步：创建 CloudBase 环境 ✅ 已完成
 
-1. 打开 [腾讯云 CloudBase 控制台](https://console.cloud.tencent.com/tcb)
-2. 点击「新建环境」
-3. 选择「按量计费」（免费额度内不产生费用）
-4. 环境名称：如 `anniversary-album`
-5. 等待环境创建完成（约 2 分钟）
+环境 ID：`anniversary-album-d8dqof1f7d1e48`
 
 ---
 
-## 第二步：创建数据库集合
+## 第二步：创建数据库集合 ✅ 已完成
 
-在 CloudBase 控制台 → 数据库 → 集合管理：
-
-### 创建 `years` 集合
-
-点击「新建集合」→ 名称输入 `years` → 确定
-
-然后点击「添加记录」，添加 10 条年份数据：
-
-```json
-{ "year": 2016, "title": "2016年 - 初遇", "cover": "", "coverThumb": "" }
-{ "year": 2017, "title": "2017年 - 相知", "cover": "", "coverThumb": "" }
-{ "year": 2018, "title": "2018年 - 心动", "cover": "", "coverThumb": "" }
-{ "year": 2019, "title": "2019年 - 陪伴", "cover": "", "coverThumb": "" }
-{ "year": 2020, "title": "2020年 - 甜蜜", "cover": "", "coverThumb": "" }
-{ "year": 2021, "title": "2021年 - 同行", "cover": "", "coverThumb": "" }
-{ "year": 2022, "title": "2022年 - 守护", "cover": "", "coverThumb": "" }
-{ "year": 2023, "title": "2023年 - 温暖", "cover": "", "coverThumb": "" }
-{ "year": 2024, "title": "2024年 - 携手", "cover": "", "coverThumb": "" }
-{ "year": 2025, "title": "2025年 - 十年", "cover": "", "coverThumb": "" }
-```
-
-> `cover` 和 `coverThumb` 先留空，上传封面图后再填写 URL。
-
-### 创建 `photos` 集合
-
-点击「新建集合」→ 名称输入 `photos` → 确定
-
-> 照片数据稍后批量导入。
+- `years` 集合：10 条年份数据（2016-2025）
+- `photos` 集合：照片数据（待导入）
 
 ---
 
-## 第三步：上传照片到云存储
+## 第三步：准备图片（本地文件方案）
 
-### 3.1 准备图片
+### 3.1 目录结构
 
-按以下目录结构准备好所有照片：
+在项目根目录下创建以下文件夹：
 
 ```
-本地照片目录/
-  ├── full/        ← 原图 (1200px 宽)
-  ├── thumb/       ← 缩略图 (300px 宽)
-  └── blur/        ← 模糊占位图 (20px 宽)
+public/
+  └── photos/
+      ├── full/        ← 原图 (1200px 宽)
+      ├── thumb/       ← 缩略图 (300px 宽)
+      └── blur/        ← 模糊占位图 (20px 宽)
 ```
 
-**缩略图/模糊图批量生成**（在本地用命令行）：
+### 3.2 生成缩略图和模糊图
 
+**方法一：使用 Node.js 脚本（推荐）**
+
+1. 在项目根目录安装依赖：
 ```bash
-# 安装 sharp（仅需一次）
-npm install -g sharp-cli
-
-# 进入照片目录，批量生成缩略图
-sharp -i ./原图/*.jpg -o ./thumb/ resize 300 --quality 60
-
-# 批量生成模糊占位图
-sharp -i ./原图/*.jpg -o ./blur/ resize 20 --quality 30
+npm install sharp --save-dev
 ```
 
-### 3.2 上传到 CloudBase
+2. 在项目根目录创建 `scripts/generate-images.js`：
 
-在 CloudBase 控制台 → 云存储：
+```javascript
+const sharp = require('sharp');
+const fs = require('fs');
+const path = require('path');
 
-1. 创建文件夹 `photos/full/`，上传原图
-2. 创建文件夹 `photos/thumb/`，上传缩略图
-3. 创建文件夹 `photos/blur/`，上传模糊占位图
-4. 创建文件夹 `music/`，上传背景音乐 `.mp3` 文件
+const baseDir = path.join(__dirname, '../public/photos');
+const fullDir = path.join(baseDir, 'full');
+const thumbDir = path.join(baseDir, 'thumb');
+const blurDir = path.join(baseDir, 'blur');
 
-> 💡 上传后每张图会获得一个 URL（点击图片 → 详情 → 文件路径），记下域名前缀。
+// 确保目录存在
+[thumbDir, blurDir].forEach(dir => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+});
+
+const files = fs.readdirSync(fullDir).filter(f => /\.(jpg|jpeg|png)$/i.test(f));
+
+async function processImages() {
+  for (const file of files) {
+    const inputPath = path.join(fullDir, file);
+    const baseName = path.basename(file, path.extname(file));
+
+    console.log(`Processing: ${file}`);
+
+    // 生成缩略图 (300px 宽)
+    await sharp(inputPath)
+      .resize(300)
+      .jpeg({ quality: 60 })
+      .toFile(path.join(thumbDir, `${baseName}.jpg`));
+
+    // 生成模糊图 (20px 宽，高斯模糊)
+    await sharp(inputPath)
+      .resize(20)
+      .blur(5)
+      .jpeg({ quality: 30 })
+      .toFile(path.join(blurDir, `${baseName}.jpg`));
+  }
+  console.log('Done!');
+}
+
+processImages();
+```
+
+3. 运行脚本：
+```bash
+node scripts/generate-images.js
+```
+
+---
+
+### 方法二：在线工具处理（无需安装）
+
+如果不想安装软件，可以使用在线工具：
+
+1. **缩略图**：访问 [https://www.iloveimg.com/resize-image](https://www.iloveimg.com/resize-image)
+   - 批量上传原图
+   - 设置宽度为 300px
+   - 下载并放入 `public/photos/thumb/`
+
+2. **模糊图**：访问 [https://www.iloveimg.com/compress-image](https://www.iloveimg.com/compress-image)
+   - 批量上传原图
+   - 压缩到最低质量
+   - 或直接用缩略图作为模糊图（效果稍差但可用）
 
 ---
 
@@ -97,55 +120,62 @@ sharp -i ./原图/*.jpg -o ./blur/ resize 20 --quality 30
 
 ### 4.1 生成照片数据 JSON
 
-准备一个 `photos.json` 文件，格式如下：
+在 `src/mock/` 目录下更新 `photos.json`，格式如下：
 
 ```json
 [
   {
+    "id": "2020_01",
     "year": 2020,
     "date": "2020-05-20",
     "location": "厦门鼓浪屿",
     "description": "第一次一起看海，落日很美",
-    "thumbUrl": "https://你的环境ID.tcb.qcloud.la/photos/thumb/2020_001.jpg",
-    "imageUrl": "https://你的环境ID.tcb.qcloud.la/photos/full/2020_001.jpg",
-    "blurUrl": "https://你的环境ID.tcb.qcloud.la/photos/blur/2020_001.jpg"
-  },
-  ...
+    "thumbUrl": "/photos/thumb/2020_01.jpg",
+    "imageUrl": "/photos/full/2020_01.jpg",
+    "blurUrl": "/photos/blur/2020_01.jpg"
+  }
 ]
 ```
 
-> ⚠️ 把 `你的环境ID` 替换为实际的 CloudBase 环境 ID（在控制台概览页查看）。
+> 注意：本地文件使用相对路径 `/photos/...` 即可。
 
-### 4.2 导入数据库
+### 4.2 更新 years.json 封面图
 
-在 CloudBase 控制台 → 数据库 → `photos` 集合 → 「导入」→ 选择 `photos.json` 文件。
+同样更新 `src/mock/years.json`：
 
----
-
-## 第五步：配置安全规则（重要）
-
-在 CloudBase 控制台 → 数据库 → `years` 集合 → 权限设置：
-
-```
+```json
 {
-  "read": true,
-  "write": false
+  "id": "y2020",
+  "year": 2020,
+  "title": "2020年 · 甜蜜",
+  "cover": "/photos/thumb/cover_2020.jpg",
+  "coverThumb": "/photos/thumb/cover_2020.jpg"
 }
 ```
 
-`photos` 集合同样设置为「所有用户可读」。
+### 4.3 导入 CloudBase 数据库
 
-云存储权限 → 存储桶权限 → 设置为「公有读」。
-
-> ⚠️ 这样手机端才能正常加载图片和数据。
+由于图片改用本地方案，`photos` 集合数据可以保留为 mock 数据，无需导入到 CloudBase。
 
 ---
 
-## 第六步：获取环境 ID 并填入项目
+## 第五步：配置安全规则 ✅ 已完成
 
-1. CloudBase 控制台 → 概览 → 复制「环境 ID」
-2. 在项目代码中找到 CloudBase 初始化配置，填入环境 ID
-3. 重新构建并部署
+- `years` 集合：所有用户可读 ✅
+- `photos` 集合：所有用户可读 ✅
+
+---
+
+## 第六步：背景音乐设置
+
+### 方式一：本地音乐文件
+
+1. 将 `.mp3` 文件放入 `public/music/` 目录
+2. 在代码中引用：`/music/bgm.mp3`
+
+### 方式二：使用公开音乐链接
+
+在 `useMusic.js` 中使用网易云音乐外链或其他公开 URL。
 
 ---
 
@@ -168,19 +198,17 @@ sharp -i ./原图/*.jpg -o ./blur/ resize 20 --quality 30
 
 ## 快速检查清单
 
-| 步骤 | 检查项 | ✓ |
-|------|--------|---|
-| 1 | CloudBase 环境已创建 | ☐ |
-| 2 | `years` 集合已创建并添加 10 条数据 | ☐ |
-| 3 | `photos` 集合已创建 | ☐ |
-| 4 | 原图已上传到 `/photos/full/` | ☐ |
-| 5 | 缩略图已上传到 `/photos/thumb/` | ☐ |
-| 6 | 模糊占位图已上传到 `/photos/blur/` | ☐ |
-| 7 | 音乐文件已上传到 `/music/` | ☐ |
-| 8 | 照片数据已导入 `photos` 集合 | ☐ |
-| 9 | 数据库权限设为「所有用户可读」 | ☐ |
-| 10 | 云存储权限设为「公有读」 | ☐ |
-| 11 | 环境 ID 已填入项目代码 | ☐ |
-| 12 | 封面图 URL 已填入 `years` 集合 | ☐ |
-| 13 | 项目已部署上线 | ☐ |
-| 14 | 手机浏览器可正常访问 | ☐ |
+| 步骤 | 检查项 | 状态 |
+|------|--------|------|
+| 1 | CloudBase 环境已创建 | ✅ |
+| 2 | `years` 集合已创建并添加 10 条数据 | ✅ |
+| 3 | `photos` 集合已创建 | ✅ |
+| 4 | 原图已放入 `public/photos/full/` | ☐ |
+| 5 | 缩略图已生成到 `public/photos/thumb/` | ☐ |
+| 6 | 模糊图已生成到 `public/photos/blur/` | ☐ |
+| 7 | `photos.json` 数据路径已更新 | ☐ |
+| 8 | `years.json` 封面图路径已更新 | ☐ |
+| 9 | 背景音乐已放入 `public/music/` | ☐ |
+| 10 | 数据库权限设为「所有用户可读」 | ✅ |
+| 11 | 项目已部署上线 | ☐ |
+| 12 | 手机浏览器可正常访问 | ☐ |
