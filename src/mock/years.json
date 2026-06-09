@@ -1,0 +1,13 @@
+[
+  { "id": "y2016", "year": 2016, "title": "2016年 · 初遇", "cover": "https://picsum.photos/seed/anniv2016/400/520", "coverThumb": "https://picsum.photos/seed/anniv2016/150/195" },
+  { "id": "y2017", "year": 2017, "title": "2017年 · 相知", "cover": "https://picsum.photos/seed/anniv2017/400/520", "coverThumb": "https://picsum.photos/seed/anniv2017/150/195" },
+  { "id": "y2018", "year": 2018, "title": "2018年 · 心动", "cover": "https://picsum.photos/seed/anniv2018/400/520", "coverThumb": "https://picsum.photos/seed/anniv2018/150/195" },
+  { "id": "y2019", "year": 2019, "title": "2019年 · 陪伴", "cover": "https://picsum.photos/seed/anniv2019/400/520", "coverThumb": "https://picsum.photos/seed/anniv2019/150/195" },
+  { "id": "y2020", "year": 2020, "title": "2020年 · 甜蜜", "cover": "https://picsum.photos/seed/anniv2020/400/520", "coverThumb": "https://picsum.photos/seed/anniv2020/150/195" },
+  { "id": "y2021", "year": 2021, "title": "2021年 · 同行", "cover": "https://picsum.photos/seed/anniv2021/400/520", "coverThumb": "https://picsum.photos/seed/anniv2021/150/195" },
+  { "id": "y2022", "year": 2022, "title": "2022年 · 守护", "cover": "https://picsum.photos/seed/anniv2022/400/520", "coverThumb": "https://picsum.photos/seed/anniv2022/150/195" },
+  { "id": "y2023", "year": 2023, "title": "2023年 · 温暖", "cover": "https://picsum.photos/seed/anniv2023/400/520", "coverThumb": "https://picsum.photos/seed/anniv2023/150/195" },
+  { "id": "y2024", "year": 2024, "title": "2024年 · 携手", "cover": "https://picsum.photos/seed/anniv2024/400/520", "coverThumb": "https://picsum.photos/seed/anniv2024/150/195" },
+  { "id": "y2025", "year": 2025, "title": "2025年 · 十年", "cover": "https://picsum.photos/seed/anniv2025/400/520", "coverThumb": "https://picsum.photos/seed/anniv2025/150/195" },
+  { "id": "y2026", "year": 2026, "title": "2026年 · 未来", "cover": "https://picsum.photos/seed/anniv2026/400/520", "coverThumb": "https://picsum.photos/seed/anniv2026/150/195" }
+]

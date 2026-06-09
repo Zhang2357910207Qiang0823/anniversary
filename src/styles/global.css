@@ -1,0 +1,50 @@
+/* ========== CSS 变量 ========== */
+:root {
+  --bg-gradient-start: #0d0d2b;
+  --bg-gradient-mid: #1a1a4e;
+  --bg-gradient-end: #ff9ecd;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.75);
+  --card-bg: rgba(255, 255, 255, 0.12);
+  --card-border: rgba(255, 255, 255, 0.3);
+  --card-glow: rgba(255, 158, 205, 0.5);
+  --accent-pink: #ff9ecd;
+  --accent-purple: #b19cd9;
+  --accent-blue: #a8d8ea;
+}
+
+/* ========== 基础重置 ========== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input, textarea, button {
+  font-family: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
