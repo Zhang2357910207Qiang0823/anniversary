@@ -26,8 +26,8 @@
       >
         <div class="photo-card" @click="openPhoto(photo)">
           <img
-            :src="photo.blurUrl"
-            class="photo-blur"
+            :data-src="photo.blurUrl"
+            class="photo-blur lazy-blur"
             :alt="photo.description"
           />
           <img
@@ -79,6 +79,13 @@ function setupObserver() {
   observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
+        // 1. 先加载blur图作为占位
+        const blurImg = entry.target.querySelector('.lazy-blur')
+        if (blurImg && blurImg.dataset.src) {
+          blurImg.src = blurImg.dataset.src
+          blurImg.removeAttribute('data-src')
+        }
+        // 2. 再加载缩略图
         const img = entry.target.querySelector('.lazy-img')
         if (img && img.dataset.src) {
           img.src = img.dataset.src
@@ -92,7 +99,7 @@ function setupObserver() {
         observer.unobserve(entry.target)
       }
     })
-  }, { rootMargin: '100px' })
+  }, { rootMargin: '200px' })
 
   const items = gridRef.value.querySelectorAll('.photo-item')
   items.forEach(item => observer.observe(item))

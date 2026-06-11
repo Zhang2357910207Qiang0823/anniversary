@@ -25,7 +25,7 @@
       >
         <div class="photo-wrapper">
           <img
-            :src="photo.blurUrl"
+            :src="Math.abs(idx - activeIndex) <= 2 ? photo.blurUrl : ''"
             class="photo-bg"
             alt=""
           />
