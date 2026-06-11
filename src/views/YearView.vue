@@ -71,35 +71,60 @@ function openPhoto(photo) {
   router.push({ name: 'photo', params: { id: photo.id } })
 }
 
-// 懒加载图片
+// 懒加载图片（带并发控制队列）
 let observer = null
+const MAX_CONCURRENT = 3      // 同时最多加载3张
+let activeLoads = 0
+const loadQueue = []
+
+function processQueue() {
+  while (activeLoads < MAX_CONCURRENT && loadQueue.length > 0) {
+    const { blurImg, thumbImg, el } = loadQueue.shift()
+    activeLoads++
+
+    const onThumbLoad = () => {
+      thumbImg.classList.add('loaded')
+      const blurBg = el.querySelector('.photo-blur')
+      if (blurBg) blurBg.style.opacity = '0'
+      onDone()
+    }
+    const onThumbError = () => { onDone() }
+    const onDone = () => {
+      activeLoads--
+      processQueue()
+    }
+
+    // 1. 先加载blur占位图
+    if (blurImg && blurImg.dataset.src) {
+      blurImg.src = blurImg.dataset.src
+      blurImg.removeAttribute('data-src')
+    }
+    // 2. 再加载缩略图
+    if (thumbImg && thumbImg.dataset.src) {
+      thumbImg.src = thumbImg.dataset.src
+      thumbImg.addEventListener('load', onThumbLoad, { once: true })
+      thumbImg.addEventListener('error', onThumbError, { once: true })
+      thumbImg.removeAttribute('data-src')
+    } else {
+      onDone()
+    }
+  }
+}
 
 function setupObserver() {
   if (!gridRef.value) return
   observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        // 1. 先加载blur图作为占位
-        const blurImg = entry.target.querySelector('.lazy-blur')
-        if (blurImg && blurImg.dataset.src) {
-          blurImg.src = blurImg.dataset.src
-          blurImg.removeAttribute('data-src')
-        }
-        // 2. 再加载缩略图
-        const img = entry.target.querySelector('.lazy-img')
-        if (img && img.dataset.src) {
-          img.src = img.dataset.src
-          img.onload = () => {
-            img.classList.add('loaded')
-            const blurBg = entry.target.querySelector('.photo-blur')
-            if (blurBg) blurBg.style.opacity = '0'
-          }
-          img.removeAttribute('data-src')
-        }
         observer.unobserve(entry.target)
+        const blurImg = entry.target.querySelector('.lazy-blur')
+        const thumbImg = entry.target.querySelector('.lazy-img')
+        // 推入加载队列，由队列控制并发
+        loadQueue.push({ blurImg, thumbImg, el: entry.target })
+        processQueue()
       }
     })
-  }, { rootMargin: '200px' })
+  }, { rootMargin: '600px' })
 
   const items = gridRef.value.querySelectorAll('.photo-item')
   items.forEach(item => observer.observe(item))
@@ -111,6 +136,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (observer) observer.disconnect()
+  loadQueue.length = 0
 })
 </script>
 
