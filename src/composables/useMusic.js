@@ -11,7 +11,7 @@ export function useMusic() {
     try {
       audio.value = new Audio()
       // 使用本地音乐文件（用户放置到 public/music/ 目录）
-      audio.value.src = '/music/bgm.mp3'
+      audio.value.src = './music/bgm.mp3'
       audio.value.loop = true
       audio.value.volume = 0.5
     } catch (e) {

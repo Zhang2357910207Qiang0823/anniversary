@@ -187,9 +187,9 @@
 
 ```
 CloudBase 云存储
-  ├── /photos/full/     ← 原图 (1200px宽, 质量85%, ~150-250KB/张)
-  ├── /photos/thumb/    ← 缩略图 (300px宽, 质量60%, ~8-12KB/张)
-  ├── /photos/blur/     ← 模糊占位图 (20px宽, 质量30%, ~1-2KB/张)
+  ├── /photos/full/<年份>/     ← 原图 (1200px宽, 质量85%, ~150-250KB/张)
+  ├── /photos/thumb/<年份>/    ← 缩略图 (300px宽, 质量60%, ~8-12KB/张)
+  ├── /photos/blur/<年份>/     ← 模糊占位图 (20px宽, 质量30%, ~1-2KB/张)
   └── /music/           ← 背景音乐文件 (1首 MP3)
 
 CloudBase 云数据库
@@ -218,9 +218,9 @@ CloudBase 云数据库
   "date": "2020-05-20",
   "location": "厦门鼓浪屿",
   "description": "第一次一起看海，落日很美",
-  "thumbUrl": "string (缩略图URL, /photos/thumb/)",
-  "imageUrl": "string (原图URL, /photos/full/)",
-  "blurUrl": "string (模糊占位图URL, /photos/blur/)"
+  "thumbUrl": "string (缩略图URL, /photos/thumb/{year}/)",
+  "imageUrl": "string (原图URL, /photos/full/{year}/)",
+  "blurUrl": "string (模糊占位图URL, /photos/blur/{year}/)"
 }
 ```
 

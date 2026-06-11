@@ -34,9 +34,18 @@
 ```
 public/
   └── photos/
-      ├── full/        ← 原图 (1200px 宽)
-      ├── thumb/       ← 缩略图 (300px 宽)
-      └── blur/        ← 模糊占位图 (20px 宽)
+      ├── full/        ← 原图，按年份分子目录 (1200px 宽)
+      │   ├── 2016/
+      │   ├── 2017/
+      │   └── ...2026/
+      ├── thumb/       ← 缩略图，按年份分子目录 (300px 宽)
+      │   ├── 2016/
+      │   ├── 2017/
+      │   └── ...2026/
+      └── blur/        ← 模糊占位图，按年份分子目录 (20px 宽)
+          ├── 2016/
+          ├── 2017/
+          └── ...2026/
 ```
 
 ### 3.2 生成缩略图和模糊图
@@ -48,54 +57,25 @@ public/
 npm install sharp --save-dev
 ```
 
-2. 在项目根目录创建 `scripts/generate-images.js`：
+2. 脚本 `scripts/generate-images.js` 已内置在项目中，它会：
+   - 自动扫描 `full/` 下所有年份文件夹
+   - 为每张原图生成缩略图（300px）和模糊占位图（20px）
+   - **增量处理**：已生成的图片自动跳过，支持分批放入原图重复运行
 
-```javascript
-const sharp = require('sharp');
-const fs = require('fs');
-const path = require('path');
-
-const baseDir = path.join(__dirname, '../public/photos');
-const fullDir = path.join(baseDir, 'full');
-const thumbDir = path.join(baseDir, 'thumb');
-const blurDir = path.join(baseDir, 'blur');
-
-// 确保目录存在
-[thumbDir, blurDir].forEach(dir => {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-});
-
-const files = fs.readdirSync(fullDir).filter(f => /\.(jpg|jpeg|png)$/i.test(f));
-
-async function processImages() {
-  for (const file of files) {
-    const inputPath = path.join(fullDir, file);
-    const baseName = path.basename(file, path.extname(file));
-
-    console.log(`Processing: ${file}`);
-
-    // 生成缩略图 (300px 宽)
-    await sharp(inputPath)
-      .resize(300)
-      .jpeg({ quality: 60 })
-      .toFile(path.join(thumbDir, `${baseName}.jpg`));
-
-    // 生成模糊图 (20px 宽，高斯模糊)
-    await sharp(inputPath)
-      .resize(20)
-      .blur(5)
-      .jpeg({ quality: 30 })
-      .toFile(path.join(blurDir, `${baseName}.jpg`));
-  }
-  console.log('Done!');
-}
-
-processImages();
+3. 按年份放入原图并运行脚本：
+```bash
+# 分批放入原图，每次都可以直接运行
+node scripts/generate-images.js
 ```
 
-3. 运行脚本：
-```bash
-node scripts/generate-images.js
+运行输出示例：
+```
+[2020]
+  Found 7 images
+    Processing: beach.jpg
+      ✓ Thumbnail: 2020/beach.jpg (300px)
+      ✓ Blur: 2020/beach.jpg (20px + blur)
+  → 7 source images, 2 new, 5 skipped
 ```
 
 ---
@@ -107,7 +87,7 @@ node scripts/generate-images.js
 1. **缩略图**：访问 [https://www.iloveimg.com/resize-image](https://www.iloveimg.com/resize-image)
    - 批量上传原图
    - 设置宽度为 300px
-   - 下载并放入 `public/photos/thumb/`
+   - 下载并放入 `public/photos/thumb/<年份>/`
 
 2. **模糊图**：访问 [https://www.iloveimg.com/compress-image](https://www.iloveimg.com/compress-image)
    - 批量上传原图
@@ -130,9 +110,9 @@ node scripts/generate-images.js
     "date": "2020-05-20",
     "location": "厦门鼓浪屿",
     "description": "第一次一起看海，落日很美",
-    "thumbUrl": "/photos/thumb/2020_01.jpg",
-    "imageUrl": "/photos/full/2020_01.jpg",
-    "blurUrl": "/photos/blur/2020_01.jpg"
+    "thumbUrl": "/photos/thumb/2020/2020_01.jpg",
+    "imageUrl": "/photos/full/2020/2020_01.jpg",
+    "blurUrl": "/photos/blur/2020/2020_01.jpg"
   }
 ]
 ```
@@ -148,8 +128,8 @@ node scripts/generate-images.js
   "id": "y2020",
   "year": 2020,
   "title": "2020年 · 甜蜜",
-  "cover": "/photos/thumb/cover_2020.jpg",
-  "coverThumb": "/photos/thumb/cover_2020.jpg"
+  "cover": "/photos/thumb/2020/cover_2020.jpg",
+  "coverThumb": "/photos/thumb/2020/cover_2020.jpg"
 }
 ```
 
@@ -203,9 +183,9 @@ node scripts/generate-images.js
 | 1 | CloudBase 环境已创建 | ✅ |
 | 2 | `years` 集合已创建并添加 10 条数据 | ✅ |
 | 3 | `photos` 集合已创建 | ✅ |
-| 4 | 原图已放入 `public/photos/full/` | ☐ |
-| 5 | 缩略图已生成到 `public/photos/thumb/` | ☐ |
-| 6 | 模糊图已生成到 `public/photos/blur/` | ☐ |
+| 4 | 原图已按年份放入 `public/photos/full/<年份>/` | ☐ |
+| 5 | 缩略图已生成到 `public/photos/thumb/<年份>/` | ☐ |
+| 6 | 模糊图已生成到 `public/photos/blur/<年份>/` | ☐ |
 | 7 | `photos.json` 数据路径已更新 | ☐ |
 | 8 | `years.json` 封面图路径已更新 | ☐ |
 | 9 | 背景音乐已放入 `public/music/` | ☐ |
