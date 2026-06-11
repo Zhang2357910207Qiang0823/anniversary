@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import StarBackground from '../components/StarBackground.vue'
 import MusicToggle from '../components/MusicToggle.vue'
@@ -133,6 +133,25 @@ function onSwipeEnd() {
 function onImgLoad(e) {
   const blur = e.target.parentElement.querySelector('.photo-bg')
   if (blur) blur.style.opacity = '0'
+  // 当前图片加载完成后，预加载相邻图片
+  preloadAdjacent()
+}
+
+// ========== 相邻图片预加载 ==========
+const PRELOAD_RANGE = 3  // 预加载前后各3张
+const preloadedUrls = new Set()
+
+function preloadAdjacent() {
+  const total = allPhotos.value.length
+  for (let i = -PRELOAD_RANGE; i <= PRELOAD_RANGE; i++) {
+    const idx = activeIndex.value + i
+    if (idx < 0 || idx >= total) continue
+    const url = allPhotos.value[idx].imageUrl
+    if (preloadedUrls.has(url)) continue
+    preloadedUrls.add(url)
+    const img = new Image()
+    img.src = url  // 静默下载到浏览器缓存
+  }
 }
 
 onMounted(() => {
@@ -142,6 +161,8 @@ onMounted(() => {
       activeIndex.value = initialIndex.value
       syncTranslate()
       initialized = true
+      // 初始化完成后预加载相邻图片
+      nextTick(preloadAdjacent)
     } else if (!initialized) {
       requestAnimationFrame(init)
     }
