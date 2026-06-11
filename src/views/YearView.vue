@@ -188,21 +188,25 @@ onUnmounted(() => {
 .year-title-wrap {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .year-title {
-  font-size: 22px;
+  font-size: clamp(16px, 5vw, 22px);
   font-weight: 700;
-  letter-spacing: 4px;
+  letter-spacing: clamp(1px, 1vw, 4px);
   color: var(--text-primary);
   text-shadow: 0 0 20px rgba(255, 158, 205, 0.5);
+  white-space: nowrap;
 }
 
 .heart-icon {
-  font-size: 30px;
+  font-size: clamp(20px, 6vw, 30px);
   color: var(--accent-pink);
   opacity: 0.7;
+  flex-shrink: 0;
 }
 
 /* 图片网格 */
